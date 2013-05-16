@@ -11,23 +11,38 @@
 class IFGT {
 
 private:
-    
-    size_t dim;                       /*! dimension */
-    std::vector<Vector> sources;           /*! source locations */
-    std::vector<double> weights;           /*! source locations */
-    std::vector<double> distances;         /*! distance to nearest center */
-    std::vector<int> centerToSource;       /*! center -> source mapping */
+    /*! dimension of each source */
+    size_t dim;                             
+    /*! source locations, each location being a Vector */
+    std::vector<Vector> sources;
+    /*! vector of source weights */            
+    std::vector<double> weights;
+    /*! vector of distance to nearest center for each source */            
+    std::vector<double> distances;          
+    /*! get the index of the source marked as a center by id */
+    std::vector<int> centerToSource;        
+    /*! number of centers, aka K */
     size_t numCenters;
-    std::vector<int> sourceToCenter;       /*! source -> center mapping */
+    /*! get the index of the center corresponding to a source id */
+    std::vector<int> sourceToCenter;    
+    /*! contains C_alpha^k of all K centers */   
     std::vector<Vector> centerCoefficients;
-    
-    size_t degree;                    /*! degree of taylor expansion */
+    /*! degree of maximum taylor expansion */
+    size_t degree;
+    /*! number of expansion monomials when expanded in
+        graded lexicographic ordering */          
     size_t numExpansionTerms;
-    double epsilon;                   /*! desired precision */
-    double bandwidth;                 /*! desired bandwidth */
+    /*! desired precision */
+    double epsilon;                   
+    /*! desired bandwidth */
+    double bandwidth;                 
+    /*! desired cluster radius */
     double clusterRadius;
+    /*! desired cutoff radius */
     double cutoffRadius;
+    /*! current radius */ 
     double radius;
+    /*! highest number of neighbors around any point */ 
     size_t maxNeighbors;
     
     inline double norm(size_t x, size_t y);
