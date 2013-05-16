@@ -9,8 +9,6 @@ from sys import argv, exit
 argc = len(argv)
 
 rc('text', usetex=True)
-#rc('font', family='sans')
-#rc('font', serif='Computer Modern Bright')
 rc('font', size='12')
 matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{cmbright}"]
 

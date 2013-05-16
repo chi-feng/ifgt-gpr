@@ -6,6 +6,11 @@ import os
 from sys import argv, exit
 argc = len(argv)
 
+rc('text', usetex=True)
+rc('font', size='12')
+matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{cmbright}"]
+
+
 def hsvToRGB(h, s, v):
     hi = np.floor(h / 60.0) % 6
     f =  (h / 60.0) - np.floor(h / 60.0)
@@ -20,7 +25,6 @@ def hsvToRGB(h, s, v):
         4: (t, p, v),
         5: (v, p, q),
     }[hi]
-
 
 fig = plt.figure()
 fig.set_size_inches(5,4)
@@ -60,6 +64,4 @@ print len(centers)
 for center in centers:
   plt.plot(points[center][1],points[center][2],'x',color='k',mew=0.5,ms=3)
   
-  
-
 plt.savefig(argv[1] + '.png', dpi=150);
