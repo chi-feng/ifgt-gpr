@@ -7,14 +7,15 @@
 #include <math.h>
 #include <assert.h>
 
-/* poor-man's linear algebra */
+/*! \typedef Poor-man's substitute for a proper linear-algebra library, real-valued vector<double> */
 typedef std::vector<double> Vector;
+/*! \typedef Matrices aredefined as vector of vector<double> */
 typedef std::vector<Vector> Matrix;
 
 /*! Matrix-vector multiplication 
- * \param A The matrix
- * \param x The vector
- * \return The matrix-vector product between A and x
+ * @param A The matrix
+ * @param x The vector
+ * @return The matrix-vector product between A and x
  */
 inline Vector operator*(const Matrix& A, const Vector& x) {
     assert(A.size() > 0);
@@ -30,9 +31,9 @@ inline Vector operator*(const Matrix& A, const Vector& x) {
 } 
 
 /*! Vector-matrix multiplication 
- * \param x The vector
- * \param A The Matirx
- * \return The matrix-vector product between x and A
+ * @param x The vector
+ * @param A The Matirx
+ * @return The matrix-vector product between x and A
  */
 inline Vector operator*(const Vector& x, const Matrix& A) {
     assert(A.size() > 0);
@@ -48,9 +49,9 @@ inline Vector operator*(const Vector& x, const Matrix& A) {
 } 
 
 /*! Vector addition 
- * \param a The first vector
- * \param b The second vector
- * \return The sum of the first and second vector */
+ * @param a The first vector
+ * @param b The second vector
+ * @return The sum of the first and second vector */
 inline Vector operator+(const Vector& a, const Vector& b) {
     assert(a.size() > 0); 
     assert(b.size() > 0);
@@ -64,9 +65,9 @@ inline Vector operator+(const Vector& a, const Vector& b) {
 
 
 /*! Vector subtraction 
- * \param a The first vector
- * \param b The second vector
- * \return The difference of the first and second vector */
+ * @param a The first vector
+ * @param b The second vector
+ * @return The difference of the first and second vector */
 inline Vector operator-(const Vector& a, const Vector& b) {
     assert(a.size() > 0); 
     assert(b.size() > 0);
@@ -80,9 +81,9 @@ inline Vector operator-(const Vector& a, const Vector& b) {
 
 
 /*! Scalar multiplication of a vector 
- * \param a The scalar
- * \param x The vector
- * \return The vector x scaled by scalar a */
+ * @param a The scalar
+ * @param x The vector
+ * @return The vector x scaled by scalar a */
 inline Vector operator*(const double a, const Vector& x) {
     assert(x.size() > 0); 
     assert(a == a); // for NaN 
@@ -95,9 +96,9 @@ inline Vector operator*(const double a, const Vector& x) {
 
 
 /*! Increment a vector by another vector
- * \param a The vector
- * \param b The vector to be added
- * \return The reference to the original vector, incremented */
+ * @param a The vector
+ * @param b The vector to be added
+ * @return The reference to the original vector, incremented */
 inline Vector& operator+=(Vector& a, const Vector& b) {
     assert(a.size() > 0); 
     assert(b.size() > 0);
@@ -109,9 +110,9 @@ inline Vector& operator+=(Vector& a, const Vector& b) {
 }
 
 /*! Decrement a vector by another vector
- * \param a The vector
- * \param b The vector to be subtracted
- * \return The reference to the original vector, decremented */
+ * @param a The vector
+ * @param b The vector to be subtracted
+ * @return The reference to the original vector, decremented */
 inline Vector& operator-=(Vector& a, const Vector& b) {
     assert(a.size() > 0); 
     assert(b.size() > 0);
@@ -123,9 +124,9 @@ inline Vector& operator-=(Vector& a, const Vector& b) {
 }
 
 /*! Pointwise multiplication of two vectors
- * \param a The first vector
- * \param b The second vector
- * \return The reference to the original vector, 
+ * @param a The first vector
+ * @param b The second vector
+ * @return The reference to the original vector, 
  * multiplied pointwise by hte second vector */
 inline Vector& operator*=(Vector& a, const Vector& b) {
     assert(a.size() > 0); 
@@ -138,9 +139,9 @@ inline Vector& operator*=(Vector& a, const Vector& b) {
 }
 
 /*! Pointwise division of two vectors
- * \param a The first vector
- * \param b The second vector
- * \return The reference to the original vector, 
+ * @param a The first vector
+ * @param b The second vector
+ * @return The reference to the original vector, 
  * divided pointwise by hte second vector */
 inline Vector& operator/=(Vector& a, const Vector& b) {
     assert(a.size() > 0); 
@@ -154,9 +155,9 @@ inline Vector& operator/=(Vector& a, const Vector& b) {
 
 
 /*! Inner (dot) product between two vectors
- * \param a The first vector
- * \param b The second vector
- * \return The dot product between the first and second vector */
+ * @param a The first vector
+ * @param b The second vector
+ * @return The dot product between the first and second vector */
 inline double operator*(const Vector& a, const Vector& b) {
     assert(a.size() > 0); 
     assert(b.size() > 0);
@@ -169,7 +170,7 @@ inline double operator*(const Vector& a, const Vector& b) {
 }
 
 /*! Prints a vector to the screen 
- * \param x The vector to be printed */
+ * @param x The vector to be printed */
 void printVector(const Vector& x) {
     std::cout.precision(3);
     std::cout << std::fixed;
@@ -183,7 +184,7 @@ void printVector(const Vector& x) {
 }
 
 /*! Prints a matrix to the screen 
- * \param A The matrix to be printed */
+ * @param A The matrix to be printed */
 void printMatrix(const Matrix& A) {
     std::cout.precision(3);
     std::cout << std::fixed;
@@ -196,7 +197,7 @@ void printMatrix(const Matrix& A) {
 }
 
 /*! Prints a matrix to the screen 
- * \param A The matrix to be printed */
+ * @param A The matrix to be printed */
 double maxValue(const Vector& x) {
     double max = x[0];
     for (size_t i = 1; i < x.size(); i++) {
@@ -252,12 +253,12 @@ void invertMatrix(const Matrix& A, Matrix& Ainv) {
 }
 
 /*! Solve matrix equation Ax=b using conjugate-gradient method
- * \param A The matrix
- * \param b The rhs
- * \param x The initial guess for x
- * \param epsilon The threshold for epsilon_2 to exit inner loop
- * \param MAX_ITER the maximum number of iterations
- * \return The number of iterations */
+ * @param A The matrix
+ * @param b The rhs
+ * @param x The initial guess for x
+ * @param epsilon The threshold for epsilon_2 to exit inner loop
+ * @param MAX_ITER the maximum number of iterations
+ * @return The number of iterations */
 size_t invertMatrixCG(const Matrix& A, const Vector& b, Vector& x, const double epsilon = 1.0e-16, const size_t MAX_ITER = 1000) {
     Vector r(b.size()); // residue
     Vector p(b.size()); // std::vector along the search direction

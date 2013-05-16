@@ -4,13 +4,13 @@
 #include "execution_timer.h"
 
 /*! Constructor for the Improved Fast Gauss Transform
- \param sources A vector of N sources (dim-dimensional vectors)
- \param weights A vector of weights q_i length N
- \param bandwidth The bandwidth of the Gauss Transform
- \param degree The maximum degree (p)
- \param clusterRadius The desired cluster radius in units of bandwidth  
+ @param sources A vector of N sources (dim-dimensional vectors)
+ @param weights A vector of weights q_i length N
+ @param bandwidth The bandwidth of the Gauss Transform
+ @param degree The maximum degree (p)
+ @param clusterRadius The desired cluster radius in units of bandwidth  
         (centers will be added until radius falls below this value)
- \param cutoffRadius The desired cutoff radius in units of bandwidth */
+ @param cutoffRadius The desired cutoff radius in units of bandwidth */
 IFGT::IFGT(
     const Matrix& sources, 
     const Vector& weights,
@@ -37,10 +37,10 @@ IFGT::IFGT(
 }
 
 /*! Compute the error bound of the IFGT
- * \param degree The degree of the Taylor expansion
- * \param radius Target cluster radius (a multiple of bandwidth)
- * \param cutoff Cutoff distance (a multiple of bandwidth)
- * \return Error bound of the IFGT */
+ * @param degree The degree of the Taylor expansion
+ * @param radius Target cluster radius (a multiple of bandwidth)
+ * @param cutoff Cutoff distance (a multiple of bandwidth)
+ * @return Error bound of the IFGT */
 double IFGT::errorBound(const size_t degree, const double radius, const double cutoff) {
     // compute the leading term 2^p/p! in the truncation error
     double leading = 2.0;
@@ -80,9 +80,9 @@ void IFGT::computeClusters() {
 }
 
 /*! Computes the squared norm between two sources
- * \param x Index of first source
- * \param y Index of second source
- * \return |x-y|^2 */
+ * @param x Index of first source
+ * @param y Index of second source
+ * @return |x-y|^2 */
 inline double IFGT::norm(const size_t x, const size_t y) {
   double delta, total = 0;
   for (size_t i = 0; i < dim; i++) {
@@ -174,8 +174,8 @@ void IFGT::computeCoefficients() {
 }
 
 /*! Evaluate the sum of Gaussians using (3.10) 
- * \param targets The points y_j that the Gauss transform will be evaluated at
- * \param gaussTransform The transformed values will be stored in gaussTransform */
+ * @param targets The points y_j that the Gauss transform will be evaluated at
+ * @param gaussTransform The transformed values will be stored in gaussTransform */
 void IFGT::evaluate(const std::vector<Vector>& targets, Vector& gaussTransform) {
     std::cout << "IFGT: Evaluating Gauss transform" << std::endl;
     size_t numTargets = targets.size();
@@ -252,8 +252,8 @@ void IFGT::writeClustersToFile(const char* filename) {
 }
 
 /*! Evaluate the discrete gauss transform directly by summing N*M square exponentials 
- * \param targets The points y_j to evaluate (length M)
- * \param gaussTransform The output vector that the results will be saved into */
+ * @param targets The points y_j to evaluate (length M)
+ * @param gaussTransform The output vector that the results will be saved into */
 void IFGT::directEvaluate(const std::vector<Vector>& targets, Vector& gaussTransform) {
     gaussTransform.resize(targets.size(), 0.0);
     double bandwidthSquared = bandwidth * bandwidth;
@@ -270,11 +270,11 @@ void IFGT::directEvaluate(const std::vector<Vector>& targets, Vector& gaussTrans
 }
 
 /*! Evaluate the 1D square exponential covariance kernel for the Gaussian Process Regression example 
- * \param x1 The x-coordinate of the first point
- * \param x2 The x-coordinate of the second point
- * \param sigma_f The maximum covariance between the two points
- * \param length The length-scale of the Gaussian process
- * \return k(x1, x2) where k is a square exponential covariance kernel */
+ * @param x1 The x-coordinate of the first point
+ * @param x2 The x-coordinate of the second point
+ * @param sigma_f The maximum covariance between the two points
+ * @param length The length-scale of the Gaussian process
+ * @return k(x1, x2) where k is a square exponential covariance kernel */
 inline double kernel1D(const double x1, const double x2, const double sigma_f, const double length) {
     double delta = x1 - x2;
     return sigma_f * sigma_f * exp(-delta * delta / (2.0 * length * length));
