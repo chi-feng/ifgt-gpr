@@ -64,4 +64,6 @@ print len(centers)
 for center in centers:
   plt.plot(points[center][1],points[center][2],'x',color='k',mew=0.5,ms=3)
   
-plt.savefig(argv[1] + '.png', dpi=150);
+plt.axis('equal')
+  
+plt.savefig(argv[1] + '.png', dpi=300);

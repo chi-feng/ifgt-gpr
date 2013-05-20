@@ -44,6 +44,8 @@ private:
     double radius;
     /*! highest number of neighbors around any point */ 
     size_t maxNeighbors;
+    /*! verbosity */
+    int verbose;
     
     inline double norm(size_t x, size_t y);
     void computeClusters();
@@ -51,7 +53,7 @@ private:
     int farthestSource();
     
 public:
-    IFGT(const std::vector<Vector>& sources, const Vector& weights, const double bandwidth, const size_t degree, const double clusterRadius, const double cutoffRadius);
+    IFGT(const std::vector<Vector>& sources, const Vector& weights, const double bandwidth, const size_t degree, const double clusterRadius, const double cutoffRadius, const int verbose);
     static double errorBound(const size_t p, const double radius, const double cutoff);
     void evaluate(const std::vector<Vector>& targets, std::vector<double>& result);
     void directEvaluate(const std::vector<Vector>& targets, std::vector<double>& result);

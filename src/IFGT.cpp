@@ -17,7 +17,7 @@ IFGT::IFGT(
     const double bandwidth, 
     const size_t degree,
     const double clusterRadius, 
-    const double cutoffRadius
+    const double cutoffRadius,
     const int verbose = 0) {
     
     this->sources = sources;
@@ -26,6 +26,7 @@ IFGT::IFGT(
     this->degree = degree;
     this->clusterRadius = clusterRadius;
     this->cutoffRadius = cutoffRadius;
+    this->verbose = verbose;
     
     dim = sources[0].size();
     sourceToCenter.resize(sources.size(), 0);
@@ -177,7 +178,7 @@ void IFGT::computeCoefficients() {
  * @param targets The points y_j that the Gauss transform will be evaluated at
  * @param gaussTransform The transformed values will be stored in gaussTransform */
 void IFGT::evaluate(const std::vector<Vector>& targets, Vector& gaussTransform) {
-    std::cout << "IFGT: Evaluating Gauss transform" << std::endl;
+    // std::cout << "IFGT: Evaluating Gauss transform" << std::endl;
     size_t numTargets = targets.size();
     gaussTransform.resize(numTargets, 0);
     
@@ -228,12 +229,12 @@ void IFGT::evaluate(const std::vector<Vector>& targets, Vector& gaussTransform) 
             maxNeighbors = neighbors;
         }
     }
-    std::cout << "IFGT: Evaluating Gauss transform...Done (maxNeighbors = " << maxNeighbors << ")" << std::endl;
+    if (verbose) std::cout << "IFGT: Evaluating Gauss transform...Done (maxNeighbors = " << maxNeighbors << ")" << std::endl;
     long direct = sources.size() * numTargets * dim; 
     long ifgt = sources.size() * numCenters 
         + numCenters * numExpansionTerms 
         + numTargets * maxNeighbors * numExpansionTerms;
-    std::cout << "IFGT: Estimated speedup " << direct / ifgt << "x" << std::endl;
+    if (verbose) std::cout << "IFGT: Estimated speedup " << direct / ifgt << "x" << std::endl;
 }
 
 void IFGT::writeClustersToFile(const char* filename) {
@@ -282,7 +283,7 @@ inline double kernel1D(const double x1, const double x2, const double sigma_f, c
 
 // Solve matrix equation using conjugate-gradient
 // and be really clever and use IFGT when evaluating A * p
-size_t invertMatrixCGIFGT(const Matrix& sources, const Vector& b, Vector& x, const double length, const double epsilon = 1.0e-16, const size_t MAX_ITER = 1000) {
+size_t invertMatrixCGIFGT(const Matrix& sources, const Vector& b, Vector& x, const double length, const double sigma_n, const double epsilon = 1.0e-3, const size_t MAX_ITER = 1000) {
     Vector r(b.size()); // residue
     Vector p(b.size()); // std::vector along the search direction
     Vector q(b.size()); // A.p
@@ -291,9 +292,9 @@ size_t invertMatrixCGIFGT(const Matrix& sources, const Vector& b, Vector& x, con
 
     // EVALUATE A * x
     Vector Ax;
-    IFGT Ax_ifgt(sources, x, sqrt(2) * length, 10, 0.2, 4);
+    IFGT Ax_ifgt(sources, x, sqrt(2) * length, 15, 0.2, 4);
     Ax_ifgt.evaluate(sources, Ax);
-
+    Ax = Ax + (sigma_n * sigma_n) * x;
     r = b - Ax;
 
 
@@ -305,8 +306,9 @@ size_t invertMatrixCGIFGT(const Matrix& sources, const Vector& b, Vector& x, con
 
         // EVALUATE A * p
         Vector Ap;
-        IFGT Ap_ifgt(sources, p, sqrt(2) * length, 10, 0.2, 4);
+        IFGT Ap_ifgt(sources, p, sqrt(2) * length, 15, 0.2, 4);
         Ap_ifgt.evaluate(sources, Ap);
+        Ap = Ap + (sigma_n * sigma_n) * p;
         
         // q = A * p;
         q = Ap;
@@ -315,7 +317,7 @@ size_t invertMatrixCGIFGT(const Matrix& sources, const Vector& b, Vector& x, con
         x += alpha * p;
         r -= alpha * q;
         e2 = r * r;
-        std::cout << "epsilon_2 = " << e2 << std::endl;
+        // std::cout << "epsilon_2 = " << e2 << std::endl;
         if (fabs(e2) < epsilon) break;
         beta = e2 / e1;
         p = r + beta * p;
@@ -330,9 +332,9 @@ void gpr_tests() {
     double sigma_n = 0.1; // noise
     double length = 0.04;
 
-    size_t N = 25;
+    size_t N = 500;
     size_t dim = 1;
-    size_t M = 201;
+    // size_t M = 201;
     
     std::ofstream file;
     file.open("out/gpr");
@@ -366,9 +368,10 @@ void gpr_tests() {
     }
     
     std::cout << "inverting covariance matrix" << std::endl;
-    
+    /*
     Matrix Kinv; 
     invertMatrix(K, Kinv); 
+    printVector(Kinv * y);
     
     std::cout << "evaluating interpolants" << std::endl;
     
@@ -388,14 +391,21 @@ void gpr_tests() {
         meanValues[i] = mean;
         variances[i] = K[0][0] - Kstar * Kinv * Kstar;
     }
+    */
     
     // Now we do it with CG
     // first compute quantity (Kinv y) by solving Kx=y for x
     // check first with CG without using IFGT 
     Vector Kinvy(N, 1.0);
-    int iter = invertMatrixCG(K, y, Kinvy, 1e-16);
-    std::cout << "invertMatrixCG used " << iter << " iterations." << std::endl;
+    timer_start();
+    int iter = invertMatrixCG(K, y, Kinvy, 1e-3);
+    timer_stop();
+    
+    std::cout << "invertMatrixCG used " << iter << " iterations at " 
+        << (timer_value() / iter) << " sec per iter" << std::endl;
+    // printVector(Kinvy);
 
+    /*
     // check against solution mean
     Vector meanValuesCG(M);
     for (size_t i = 0; i < M; i++) {
@@ -408,8 +418,8 @@ void gpr_tests() {
         meanValuesCG[i] = mean;
 
         Vector KinvKstar(N, 1.0);
-        iter = invertMatrixCG(K, Kstar, KinvKstar, 1e-15);
-        std::cout << "invertMatrixCG used " << iter << " iterations." << std::endl;
+        iter = invertMatrixCG(K, Kstar, KinvKstar, 1e-3);
+        // std::cout << "invertMatrixCG used " << iter << " iterations." << std::endl;
         
         variances[i] = K[0][0] - Kstar * KinvKstar;
     }
@@ -421,23 +431,23 @@ void gpr_tests() {
         file << xstar << " " << meanValues[i] << " " << variances[i] << " " 
              << noiseFree[i] << " " << meanValuesCG[i] << std::endl;
     }
-    
+    */
     
     // Now we do it with CG AND IFGT
     // first compute quantity (Kinv y) by solving Kx=y for x
+    /*
     Vector Ktest;
     Vector test(N, 1.0 * sigma_f * sigma_f);
-    Vector test_unweighted(N, 1.0);
-    IFGT Ktest_ifgt(x, test, sqrt(2) * length, 10, 0.2, 4);
+    IFGT Ktest_ifgt(x, test, sqrt(2) * length, 10, 0.5, 2);
     Ktest_ifgt.directEvaluate(x, Ktest);
     printVector(Ktest);
-    printVector(K * test_unweighted);
-    
-    Kinvy.resize(N, 1.0 * sigma_f * sigma_f);
-    iter = invertMatrixCGIFGT(x, y, Kinvy, length);
-    std::cout << "invertMatrixCGIFGT used " << iter << " iterations." << std::endl;
-    
-    
+    */
+    Kinvy.resize(N, 0);
+    timer_start();
+    iter = invertMatrixCGIFGT(x, y, Kinvy, length, sigma_n, 1e-3);
+    timer_stop();
+    std::cout << "invertMatrixCGIFGT used " << iter << " iterations at " 
+        << (timer_value() / iter) << " sec per iter" << std::endl;
 }
 
 void ifgt_tests() {
@@ -498,7 +508,7 @@ void ifgt_tests() {
 
 void matrix_tests() {
     /* finite difference test for matrix methods */
-    size_t N = 120;
+    size_t N = 10;
     Matrix A; 
     A.resize(N, Vector(N, 0.0));
     for (size_t i = 0; i < N; i++) {
@@ -508,18 +518,25 @@ void matrix_tests() {
     }
     Vector b(N, 0.0);
     b[N/2] = 1.0;
-    Vector x(b.size(), 1.0);
-    int iters = invertMatrixCG(A, b, x, 1e-13);
-    std::cout << "CG took " << iters << " steps." << std::endl;
-    printVector(x);
+    
+    printMatrix(A);
+    printVector(b);
+    printVector(A*b);
+    
+    // Vector x(b.size(), 1.0);
+    // int iters = invertMatrixCG(A, b, x, 1e-13);
+    // std::cout << "CG took " << iters << " steps." << std::endl;
+    // printVector(x);
 }
 
 int main(int argc, char **argv) {
 
     srand(time(NULL));
 
-    ifgt_tests();
-    // gpr_tests();
+    //ifgt_tests();
+    gpr_tests();
+    // matrix_tests(); 
+    
     
     return 0;
 }

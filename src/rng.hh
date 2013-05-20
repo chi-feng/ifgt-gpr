@@ -1,10 +1,6 @@
 #ifndef RNG_HH
 #define RNG_HH
 
-/* using GSL wasn't worth the issues with portability */
-/* #include <gsl/gsl_rng.h> */
-/* #include <gsl/gsl_randist.h> */
-
 #include <cstdlib> /* rand */
 #include <cmath>   /* M_PI */
 
